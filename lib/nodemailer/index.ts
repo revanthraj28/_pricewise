@@ -82,7 +82,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // STARTTLS requires false
   auth: {
-    user: 'revanthraj135@outlook.com',
+    user: 'pricewiseexample@outlook.com',
     pass: process.env.EMAIL_PASSWORD,
   },
   tls: {
