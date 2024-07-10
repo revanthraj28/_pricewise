@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import { EmailContent, EmailProductInfo, NotificationType } from '@/types';
 import nodemailer from 'nodemailer';
@@ -8,21 +8,18 @@ const Notification = {
   CHANGE_OF_STOCK: 'CHANGE_OF_STOCK',
   LOWEST_PRICE: 'LOWEST_PRICE',
   THRESHOLD_MET: 'THRESHOLD_MET',
-}
+};
 
 export async function generateEmailBody(
   product: EmailProductInfo,
   type: NotificationType
-  ) {
+) {
   const THRESHOLD_PERCENTAGE = 40;
-  // Shorten the product title
   const shortenedTitle =
-    product.title.length > 20
-      ? `${product.title.substring(0, 20)}...`
-      : product.title;
+    product.title.length > 20 ? `${product.title.substring(0, 20)}...` : product.title;
 
-  let subject = "";
-  let body = "";
+  let subject = '';
+  let body = '';
 
   switch (type) {
     case Notification.WELCOME:
@@ -83,25 +80,31 @@ export async function generateEmailBody(
 const transporter = nodemailer.createTransport({
   pool: true,
   service: 'hotmail',
-  port: 2525,
+  port: 587, // Using the typical SMTP port for Hotmail
+  secure: false, // Use TLS
   auth: {
     user: 'revanthraj135@outlook.com',
     pass: process.env.EMAIL_PASSWORD,
   },
-  maxConnections: 1
-})
+  tls: {
+    rejectUnauthorized: false,
+  },
+  maxConnections: 1,
+});
 
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
     from: 'revanthraj135@outlook.com',
     to: sendTo,
-    html: emailContent.body,
     subject: emailContent.subject,
-  }
+    html: emailContent.body,
+  };
 
-  transporter.sendMail(mailOptions, (error: any, info: any) => {
-    if(error) return console.log(error);
-    
-    console.log('Email sent: ', info);
-  })
-}
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new Error('Failed to send email.');
+  }
+};
