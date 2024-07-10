@@ -123,7 +123,7 @@ transporter.verify((error, success) => {
 
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
-    from: 'revanthraj135@outlook.com',
+    from: 'pricewiseexample@outlook.com',
     to: sendTo,
     subject: emailContent.subject,
     html: emailContent.body,
