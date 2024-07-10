@@ -77,22 +77,20 @@ export async function generateEmailBody(
 
   return { subject, body };
 }
-
-const smtpOptions: SMTPTransport.Options = {
+const transporter = nodemailer.createTransport({
   host: 'smtp-mail.outlook.com',
   port: 587,
-  secure: false, // Use TLS
+  secure: false, // STARTTLS requires false
   auth: {
     user: 'revanthraj135@outlook.com',
     pass: process.env.EMAIL_PASSWORD,
   },
   tls: {
-    ciphers: 'SSLv3',
+    ciphers: 'SSLv3', // Adjust according to Outlook's TLS requirements if necessary
   },
-};
+});
 
-const transporter: Transporter = nodemailer.createTransport(smtpOptions);
-
+// Test the transporter setup
 transporter.verify((error, success) => {
   if (error) {
     console.error('Nodemailer verification error:', error);
@@ -100,6 +98,28 @@ transporter.verify((error, success) => {
     console.log('Nodemailer is ready to send emails:', success);
   }
 });
+// const smtpOptions: SMTPTransport.Options = {
+//   host: 'smtp-mail.outlook.com',
+//   port: 587,
+//   secure: false, // Use TLS
+//   auth: {
+//     user: 'revanthraj135@outlook.com',
+//     pass: process.env.EMAIL_PASSWORD,
+//   },
+//   tls: {
+//     ciphers: 'SSLv3',
+//   },
+// };
+
+// const transporter: Transporter = nodemailer.createTransport(smtpOptions);
+
+// transporter.verify((error, success) => {
+//   if (error) {
+//     console.error('Nodemailer verification error:', error);
+//   } else {
+//     console.log('Nodemailer is ready to send emails:', success);
+//   }
+// });
 
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
