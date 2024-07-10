@@ -101,6 +101,7 @@ export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) =>
   };
 
   try {
+    console.log("Sending email with the following options:", mailOptions);
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent:', info.response);
   } catch (error) {
@@ -108,3 +109,8 @@ export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) =>
     throw new Error('Failed to send email.');
   }
 };
+
+// Additional logging for environment variables and connection
+console.log('Environment Variables:', {
+  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
+});
