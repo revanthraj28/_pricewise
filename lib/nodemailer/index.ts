@@ -1,7 +1,8 @@
 "use server";
 
 import { EmailContent, EmailProductInfo, NotificationType } from '@/types';
-import nodemailer from 'nodemailer';
+import nodemailer, { Transporter } from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 const Notification = {
   WELCOME: 'WELCOME',
@@ -77,19 +78,27 @@ export async function generateEmailBody(
   return { subject, body };
 }
 
-const transporter = nodemailer.createTransport({
-  pool: true,
-  service: 'hotmail',
-  port: 587, // Using the typical SMTP port for Hotmail
+const smtpOptions: SMTPTransport.Options = {
+  host: 'smtp-mail.outlook.com',
+  port: 587,
   secure: false, // Use TLS
   auth: {
     user: 'revanthraj135@outlook.com',
     pass: process.env.EMAIL_PASSWORD,
   },
   tls: {
-    rejectUnauthorized: false,
+    ciphers: 'SSLv3',
   },
-  maxConnections: 1,
+};
+
+const transporter: Transporter = nodemailer.createTransport(smtpOptions);
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Nodemailer verification error:', error);
+  } else {
+    console.log('Nodemailer is ready to send emails:', success);
+  }
 });
 
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
