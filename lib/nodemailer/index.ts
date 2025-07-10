@@ -1,20 +1,22 @@
+// lib/nodemailer.ts
 "use server";
 
-import { EmailContent, EmailProductInfo, NotificationType } from '@/types';
-import nodemailer, { Transporter } from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import nodemailer from "nodemailer";
+import { EmailContent, EmailProductInfo, NotificationType } from "@/types";
 
+// Notification types
 const Notification = {
   WELCOME: 'WELCOME',
   CHANGE_OF_STOCK: 'CHANGE_OF_STOCK',
   LOWEST_PRICE: 'LOWEST_PRICE',
   THRESHOLD_MET: 'THRESHOLD_MET',
-};
+} as const;
 
+// Generates dynamic email body and subject
 export async function generateEmailBody(
   product: EmailProductInfo,
   type: NotificationType
-) {
+): Promise<EmailContent> {
   const THRESHOLD_PERCENTAGE = 40;
   const shortenedTitle =
     product.title.length > 20 ? `${product.title.substring(0, 20)}...` : product.title;
@@ -28,15 +30,13 @@ export async function generateEmailBody(
       body = `
         <div>
           <h2>Welcome to PriceWise 🚀</h2>
-          <p>You are now tracking ${product.title}.</p>
+          <p>You are now tracking <strong>${product.title}</strong>.</p>
           <p>Here's an example of how you'll receive updates:</p>
           <div style="border: 1px solid #ccc; padding: 10px; background-color: #f8f8f8;">
             <h3>${product.title} is back in stock!</h3>
-            <p>We're excited to let you know that ${product.title} is now back in stock.</p>
-            <p>Don't miss out - <a href="${product.url}" target="_blank" rel="noopener noreferrer">buy it now</a>!</p>
-            <img src="https://i.ibb.co/pwFBRMC/Screenshot-2023-09-26-at-1-47-50-AM.png" alt="Product Image" style="max-width: 100%;" />
+            <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Click here to buy</a></p>
+            <img src="${product.image}" alt="Product Image" style="max-width: 100%;" />
           </div>
-          <p>Stay tuned for more updates on ${product.title} and other products you're tracking.</p>
         </div>
       `;
       break;
@@ -45,28 +45,28 @@ export async function generateEmailBody(
       subject = `${shortenedTitle} is now back in stock!`;
       body = `
         <div>
-          <h4>Hey, ${product.title} is now restocked! Grab yours before they run out again!</h4>
-          <p>See the product <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a>.</p>
+          <h3>${product.title} is restocked! 🎉</h3>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Buy it now</a></p>
         </div>
       `;
       break;
 
     case Notification.LOWEST_PRICE:
-      subject = `Lowest Price Alert for ${shortenedTitle}`;
+      subject = `Lowest Price Alert: ${shortenedTitle}`;
       body = `
         <div>
-          <h4>Hey, ${product.title} has reached its lowest price ever!!</h4>
-          <p>Grab the product <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a> now.</p>
+          <h3>🎯 Lowest price reached for ${product.title}!</h3>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Grab the deal</a></p>
         </div>
       `;
       break;
 
     case Notification.THRESHOLD_MET:
-      subject = `Discount Alert for ${shortenedTitle}`;
+      subject = `Big Discount Alert: ${shortenedTitle}`;
       body = `
         <div>
-          <h4>Hey, ${product.title} is now available at a discount more than ${THRESHOLD_PERCENTAGE}%!</h4>
-          <p>Grab it right away from <a href="${product.url}" target="_blank" rel="noopener noreferrer">here</a>.</p>
+          <h3>🔥 ${product.title} has more than ${THRESHOLD_PERCENTAGE}% off!</h3>
+          <p><a href="${product.url}" target="_blank" rel="noopener noreferrer">Check it out</a></p>
         </div>
       `;
       break;
@@ -77,48 +77,42 @@ export async function generateEmailBody(
 
   return { subject, body };
 }
+
+// Create Outlook SMTP transporter
 const transporter = nodemailer.createTransport({
-  host: 'smtp-mail.outlook.com',
+  host: "smtp-mail.outlook.com",
   port: 587,
-  secure: false, // STARTTLS requires false
+  secure: false,
   auth: {
-    user: 'pricewiseexample@outlook.com',
+    user: "pricewiseexample@outlook.com",
     pass: process.env.EMAIL_PASSWORD,
-  },
-  tls: {
-    ciphers: 'SSLv3', // Adjust according to Outlook's TLS requirements if necessary
   },
 });
 
-// Test the transporter setup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('Nodemailer verification error:', error);
+// Optional: Verify transporter
+transporter.verify((err, success) => {
+  if (err) {
+    console.error("❌ SMTP setup failed:", err);
   } else {
-    console.log('Nodemailer is ready to send emails:', success);
+    console.log("✅ SMTP ready to send emails:", success);
   }
 });
 
-
+// Function to send email
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
-    from: 'pricewiseexample@outlook.com',
+    from: "pricewiseexample@outlook.com",
     to: sendTo,
     subject: emailContent.subject,
     html: emailContent.body,
   };
 
   try {
-    console.log("Sending email with the following options:", mailOptions);
+    console.log("📧 Sending email to:", sendTo);
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
+    console.log("✅ Email sent:", info.response);
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Failed to send email.');
+    console.error("❌ Failed to send email:", error);
+    throw new Error("Email failed to send.");
   }
 };
-
-// Additional logging for environment variables and connection
-console.log('Environment Variables:', {
-  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
-});
