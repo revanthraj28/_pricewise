@@ -44,6 +44,7 @@ export async function scrapeAndStoreProduct(productUrl: string) {
     );
 
     revalidatePath(`/products/${newProduct._id}`);
+    revalidatePath('/');
   } catch (error: any) {
     throw new Error(`Failed to create/update product: ${error.message}`)
   }
@@ -68,6 +69,7 @@ export async function getAllProducts() {
     connectToDB();
 
     const products = await Product.find();
+    // const products = await Product.find().lean();
 
     return products;
   } catch (error) {

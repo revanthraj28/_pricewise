@@ -98,28 +98,7 @@ transporter.verify((error, success) => {
     console.log('Nodemailer is ready to send emails:', success);
   }
 });
-// const smtpOptions: SMTPTransport.Options = {
-//   host: 'smtp-mail.outlook.com',
-//   port: 587,
-//   secure: false, // Use TLS
-//   auth: {
-//     user: 'revanthraj135@outlook.com',
-//     pass: process.env.EMAIL_PASSWORD,
-//   },
-//   tls: {
-//     ciphers: 'SSLv3',
-//   },
-// };
 
-// const transporter: Transporter = nodemailer.createTransport(smtpOptions);
-
-// transporter.verify((error, success) => {
-//   if (error) {
-//     console.error('Nodemailer verification error:', error);
-//   } else {
-//     console.log('Nodemailer is ready to send emails:', success);
-//   }
-// });
 
 export const sendEmail = async (emailContent: EmailContent, sendTo: string[]) => {
   const mailOptions = {
