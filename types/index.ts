@@ -41,8 +41,8 @@ export type PriceHistoryItem = {
   export interface EmailProductInfo {
     title: string;
     url: string;
-    image: string;
-    currentPrice?: number;
-    lowestPrice?: number;
+    // image: string;
+    // currentPrice?: number;
+    // lowestPrice?: number;
   }
   
